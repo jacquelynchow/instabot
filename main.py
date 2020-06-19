@@ -1,17 +1,17 @@
-
+# selenium webdriver tools
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+# import other libraries 
 from time import sleep
 import random
-from selenium.webdriver import ActionChains
+# import username and password from secret file
+import config
 
 class instaBot:
-    def __init__(self, username, password, accountType, hashtagSearch):
+    def __init__(self, username, password):
         self.username = username 
         self.password = password
-        self.accountType = accountType # food or personal account
-        self.hashtagSearch = hashtagSearch # doing hashtag searches or main feed activity
         self.driver = webdriver.Chrome(executable_path = '/usr/local/bin/chromedriver') # type of driver used
 
     def login(self):
@@ -33,25 +33,27 @@ class instaBot:
         driver.find_element_by_xpath("//button[contains(text(), 'Not Now')]").click()
         sleep(1)
 
-    def searchHashtag(self, hashtag):
+    def searchHashtag(self, hashtag, amount):
         driver = self.driver
+        related_hashtags = [hashtag]
+        """
+        Still in progress... Go to related hahstags
         # get related hashtags 
         related_hashtags = [hashtag]
         foundHashtags = driver.find_elements(By.CLASS_NAME, 'LFGs8.xil3i')
         for tag in foundHashtags:
             related_hashtags.append(tag.text[1:])
+        """
+        
         # go to every hashtag and like/comment
         for tag in related_hashtags:
             # go to the specific hashtag's post listings
             driver.get('https://www.instagram.com/explore/tags/' + tag)
-            # set number of posts to go through
-            amount = 4
-            driver.execute_script("window.scrollTo(0, Y)")
-            sleep(0.5)
+            sleep(1)
             # find first most recent post
             driver.find_element_by_xpath('/html/body/div[1]/section/main/article/div[2]/div/div[1]/div[1]/a/div[1]/div[2]').click()
             i = 0
-            while i <= amount:
+            while i <= amount+1:
                 sleep(2)
                 self.likePhoto()
                 sleep(2)
@@ -63,7 +65,7 @@ class instaBot:
 
     def likePhoto(self):
         # like the photo
-        self.driver.find_element_by_xpath('//*[@id="react-root"]/section/main/section/div/div[2]/div/article[1]/div[2]/section[1]/span[1]/button').click()
+        self.driver.find_element_by_class_name('wpO6b').click()
 
     def commentPhoto(self):
         driver = self.driver
@@ -75,21 +77,23 @@ class instaBot:
         random.shuffle(commentsList)
         sleep(2)
         # find comment box on instagram page
-        if self.hashtagSearch:
-            # hashtag feed comment box
-            entry = lambda: driver.find_element_by_xpath('/html/body/div[4]/div[2]/div/article/div[2]/section[3]/div/form/textarea')
-        else:
-            # main feed comment box
-            entry = lambda: driver.find_element_by_xpath('/html/body/div[1]/section/main/section/div/div[2]/div/article[4]/div[2]/section[3]/div/form/textarea')
+        # hashtag feed comment box
+        entry = lambda: driver.find_element_by_xpath('/html/body/div[4]/div[2]/div/article/div[2]/section[3]/div/form/textarea')
         # click on comment box               
-        entry().click()
-        # go through each letter and send/type it in
-        for letter in commentsList[0]:
-            entry().send_keys(letter)
-            sleep(random.randint(1,8)/30)
-        # hit return key when comment is ready
-        entry().send_keys(Keys.RETURN)
+        try:
+            entry().click()
+            # go through each letter and send/type it in
+            for letter in commentsList[0]:
+                entry().send_keys(letter)
+                sleep(random.randint(1,8)/30)
+            # hit return key when comment is ready
+            entry().send_keys(Keys.RETURN)
+        except Exception:
+            # if some error occurs, like load is too slow, continue to next image
+            pass
 
+    """
+    Still in progress... Go through main feed and like every image
     def likingFeed(self, likes, account):
         driver = self.driver
         #scroll a bit
@@ -127,34 +131,18 @@ class instaBot:
             #calculate new scroll height 
             #new_height = driver.execute_script("return document.body.scrollHeight")
             #last_height = new_height
-    
-    def main():
-        # create classes
-        personalgram = instaBot('jacquelynchow', '902173785', 'personal', False)
-        #foodstagram = instaBot('jacqchereats', '834montrose', 'food', True)
-
-        # set which account
-        myInstagram = personalgram
-        myInstagram.driver.set_window_size(1000,1000)
-
-        if myInstagram == personalgram:
-            # login to instagram
-            personalgram.login()    
-            personalgram.likingFeed(3, myInstagram)
-            personalgram.driver.quit()
-        else:
-            # login to instagram
-            foodstagram.login()    
-            # pick random hashtag from randomized set list
-            #hashtag_list = ['foodblogger', 'foodblog', 'foodie', 'foodporn', 'eeeeeats']
-            #random.shuffle(hashtag_list)
-            # hashtag feed
-            #foodstagram.searchHashtag(hashtag_list[0])
-            #foodstagram.driver.get('https://www.instagram.com/')
-            sleep(2)
-            # main feed
-            foodstagram.hashtagSearch = False
-            foodstagram.likingFeed(40, myInstagram)
-            foodstagram.driver.quit()
-
-main()
+        """
+# Instantiates the instabot class and runs the login and searchHashtag function
+# create classes
+foodstagram = instaBot(config.username, config.password)
+# set window size
+foodstagram.driver.set_window_size(1000,1000)
+# login to instagram
+foodstagram.login()    
+# pick random hashtag from randomized set list
+hashtag_list = ['foodblogger', 'foodblog', 'foodie', 'foodporn', 'eeeeeats']
+random.shuffle(hashtag_list)
+# search through hashtag feed and like/comment posts
+foodstagram.searchHashtag(hashtag_list[0], config.amount)
+# close browser
+foodstagram.driver.quit()
