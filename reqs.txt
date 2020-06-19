@@ -15,7 +15,6 @@ mf2py==1.1.2
 pyparsing==2.4.7
 rdflib==4.2.2
 rdflib-jsonld==0.5.0
-recipe-scrapers @ file:///Users/jacquelynchow/recipe-scrapers
 requests==2.23.0
 requests-file==1.5.1
 six==1.15.0
