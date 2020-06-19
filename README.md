@@ -2,6 +2,7 @@
 
 ## Description
 Created as a fun way to practice using Selenium in Python and to automate liking/commenting food images under specific food related hashtags. The idea of this project came from wanting to grow my food Instagram account in followers and interactions. 
+- Based on Instagram 2020 html tags
 
 ## Files
 - main.py: python program that runs the automatic liking and commenting
